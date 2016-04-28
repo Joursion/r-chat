@@ -5,14 +5,15 @@ import { Link, IndexLink } from 'react-router';
 
 export default class Header extends Component {
     render() {
-        let { handleLogout, isLogin } = this.props;
+        let { handleLogout, user, isLogin } = this.props;
+        console.log('isLogin', isLogin);
         return (
             <div>
                 <nav className="navbar">
-                    <IndexLink to = "/">Home</IndexLink>
+                    <IndexLink to = "/index">Home</IndexLink>
                     <IndexLink to = "/about">About</IndexLink>
                     {
-                        isLogin ? 
+                        isLogin ?
                         <IndexLink to = "/logout">Logout</IndexLink> :
                         <div>
                             <IndexLink to = "/login">Login</IndexLink>

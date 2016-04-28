@@ -21,16 +21,18 @@ module.exports = {
     
     setUserInfo: function (user) {
         return {
-            type: this.type.SetUserInfo,
+            type: this.types.SetUserInfo,
             user: user
         }
     },
 
-    groupMessage: function (group, message) {
+    groupMessage: function (group, message,user,time) {
         return {
             type: this.types.GroupMessage,
             group: group,
-            message: message
+            message: message,
+            user: user,
+            time: time
         }
     },
 
@@ -44,8 +46,8 @@ module.exports = {
     
     setLogin: function (status) {
         return {
-            type: this.type.SetLogin,
-            status: status
+            type: this.types.SetLogin,
+            isLogin: status
         }
     }
 };

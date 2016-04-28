@@ -32,12 +32,12 @@ io.on('connection', function (socket) {
         console.log(data);
     });
     socket.on('send', function (data) {
-        
+        console.log('recieve send', data);
         socket.broadcast.emit('new',{
             group: 'all',
-            message: data
+            data : data
         });
-        console.log(data);
+        console.log('new',data);
     });
 });
 

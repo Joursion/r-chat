@@ -15,13 +15,20 @@ export default class Index extends Component {
     }
 
     render() {
-        console.log(this);
-        const { handleSendMessage, message } = this.props;
-        console.log('index message ',message);
+      //  console.log(this);
+        let { handleSendMessage, message, user} = this.props;
+
+      //  console.log(user);
+        // <div className = "show_user">  {user} </div>
+        //console.log('handleSendMessage ', handleSendMessage);
         return (
             <div className = "inputArea">
+                <div className = "user">
+                    <img src={user.avatar} style={{width:50,height:50}}/>
+                    <span>{ user.username }</span>
+                </div>
                 <MessageBox message = { message }/>
-                <InputBox handleSendMessage = { handleSendMessage } />
+                <InputBox handleSendMessage = { handleSendMessage } user = { user }/>
             </div>
         )
     }

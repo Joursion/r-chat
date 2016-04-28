@@ -1,6 +1,6 @@
 'use strict';
 
-import React, { Component, ProTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 import Avatar from './avatar.jsx';
 
 export default class Message extends Component {
@@ -11,9 +11,16 @@ export default class Message extends Component {
         time: '00:00:00'
     };*/
 
+    /*
+    *   <div className= "User-avatar">
+     <Avatar src = { content.avatar } />
+     </div>
+     <span>{ content.name } { time }</span>
+    * */
     render() {
-        let { avatar, name, content, time } = this.props;
 
+        let { message } = this.props;
+       // console.log('message', message);
         let oneStyle = {
             display: 'flex',
             background: '#ffffff'
@@ -21,11 +28,12 @@ export default class Message extends Component {
         
         return (
             <div className = "One" style = { oneStyle } >
-                <div className= "User-avatar">
-                     <Avatar src = { avatar } />
+                <div><img src={ message.user.avatar } style={{width:40, height: 40}}/>
+                    { message.user.username }
+                    <span> { message.time } </span>
+                    <div> { message.message }</div>
                 </div>
-                <span>{ name } { time }</span>
-                <div>{ content }</div>
+
             </div>
         )
     }

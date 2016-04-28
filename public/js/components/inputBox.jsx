@@ -13,17 +13,33 @@ export default class InputBox extends Component {
     }*/
 
     componentDidMount () {
-        let socket = io();
-        socket.emit('ison',"ison");
+        /*let socket = io();
+        socket.emit('ison',"ison");*/
     }
 
     constructor(props, context) {
         super(props, context);
     }
 
+    getMessage() {
+        let input = this.refs.inputMessage;
+        let message = input.value;
+        let Mto = 'all';
+        let D = new Date();
+        let time = D.getMonth()  + 1 + '-' + D.getDate() + '  '
+            + D.getHours() + ':' + D.getMinutes() + ':' + D.getSeconds();
+        input.value = "";
+        return {
+            Mto: Mto,
+            message: message,
+            time: time
+        };
+    }
+
     render() {
-        let { handleSendMessage } = this.props;
-      //  console.log(handleSendMessage);
+        let { handleSendMessage, user } = this.props;
+      //  console.log('user', user);
+       // console.log('handleSendMessage', handleSendMessage);
         let messageInputStyle = {
             height:100,
             width: 200,
@@ -40,14 +56,18 @@ export default class InputBox extends Component {
                     ref = 'inputMessage'
                     maxLength = {512}
 
+                    onKeyDown={ e => {
+                        if (e.keyCode === 13 && !e.shiftKey) {
+                            let msg = this.getMessage.bind(this)();
+                            e.preventDefault();
+                            handleSendMessage(msg.message, msg.Mto, user, msg.time);
+                        }
+                    } }
+
                     />
                 <button onClick = { e => {
-                    let inputMessage = this.refs.inputMessage.value;
-                    let Mto = 'all';
-                 /*   if (sendMessageCheck(inputMessage)) {
-                        return;
-                    }*/
-                    handleSendMessage(inputMessage, Mto);
+                    let msg = this.getMessage.bind(this)();
+                    handleSendMessage(msg.message, msg.Mto, user, msg.time);
                 }}
                 >发送</button>
             </div>

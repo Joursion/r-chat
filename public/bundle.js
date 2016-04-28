@@ -42,9 +42,9 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/*!****************************!*\
-  !*** ./public/js/main.jsx ***!
-  \****************************/
+/*!*********************!*\
+  !*** ./js/main.jsx ***!
+  \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -101,6 +101,10 @@
 	
 	var _test2 = _interopRequireDefault(_test);
 	
+	var _default = __webpack_require__(/*! ./default.js */ 303);
+	
+	var _default2 = _interopRequireDefault(_default);
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -115,10 +119,13 @@
 	//Action
 	var Action = __webpack_require__(/*! ./action.js */ 300);
 	
-	//part
+	//part 
 	
 	
 	// pages
+	
+	
+	//default
 	
 	
 	// registe login sendMessage
@@ -135,14 +142,37 @@
 	    _createClass(App, [{
 	        key: 'handleRegister',
 	        value: function handleRegister(username, password) {
-	            console.log(username);
+	            var _this2 = this;
+	
+	            fetch("/register", {
+	                method: 'POST',
+	                headers: {
+	                    'Accept': 'application/json',
+	                    'Content-Type': 'application/json'
+	                },
+	                body: JSON.stringify({
+	                    username: username,
+	                    password: password
+	                })
+	            }).then(function (res) {
+	                return res.json();
+	            }).then(function (data) {
+	                console.log(data);
+	                _this2.porps.history.push('/lgoin');
+	            }).catch(function (e) {
+	                return console.log('handleRegister error', e);
+	            });
 	        }
 	    }, {
 	        key: 'handleLogout',
-	        value: function handleLogout() {}
+	        value: function handleLogout() {
+	            window.localStorage.removeItem('key');
+	        }
 	    }, {
 	        key: 'handleLogin',
 	        value: function handleLogin(username, password) {
+	            var _this3 = this;
+	
 	            fetch("/login", {
 	                method: 'POST',
 	                headers: {
@@ -156,9 +186,44 @@
 	            }).then(function (response) {
 	                return response.json();
 	            }).then(function (data) {
-	                return console.log(data);
+	                console.log(data);
+	                if (data.error) {
+	                    Store.dispatch(Action.setLogin(true));
+	                } else {
+	                    Store.dispatch(Action.setLogin(true));
+	                    Store.dispatch(Action.setUser({
+	                        username: data.username,
+	                        avatar: data.avatar
+	                    }));
+	                    _this3.props.history.push('/index');
+	
+	                    window.sessionStorage.setItem('token', data.token);
+	                    window.localStorage.setItem('username', username);
+	                    window.localStorage.setItem('password', password);
+	                }
 	            }).catch(function (e) {
-	                return console.log('error', e);
+	                return console.log('handleLogin error', e);
+	            });
+	        }
+	    }, {
+	        key: 'handleRegInfoCheck',
+	        value: function handleRegInfoCheck(username, password) {
+	            fetch("/regcheck", {
+	                method: 'POST',
+	                headers: {
+	                    'Accept': 'application/json',
+	                    'Content-Type': 'application/json'
+	                },
+	                body: JSON.stringify({
+	                    username: username,
+	                    password: password
+	                })
+	            }).then(function (res) {
+	                return res.text();
+	            }).then(function (data) {
+	                return data.res;
+	            }).catch(function (e) {
+	                return console.log('handleRegInfoCheck error', e);
 	            });
 	        }
 	
@@ -167,14 +232,20 @@
 	
 	    }, {
 	        key: 'handleSendMessage',
-	        value: function handleSendMessage(message, Mto) {
+	        value: function handleSendMessage(message, Mto, user, time) {
 	            if (Mto == 'all') {
 	                fetch("/message", {
 	                    method: 'POST',
 	                    headers: {
-	                        'Content-Type': 'text/html'
+	                        'Accept': 'application/json',
+	                        'Content-Type': 'application/json'
 	                    },
-	                    body: message
+	                    body: JSON.stringify({
+	                        content: message,
+	                        group: Mto,
+	                        user: user,
+	                        time: time
+	                    })
 	                }).then(function (res) {
 	                    return res.text();
 	                }).then(function (data) {
@@ -184,24 +255,54 @@
 	                });
 	
 	                var socket = (0, _socket2.default)();
-	                socket.emit('send', message);
+	                socket.emit('send', {
+	                    message: message,
+	                    user: user,
+	                    time: time
+	                });
 	            }
 	        }
 	    }, {
-	        key: 'getMessage',
-	        value: function getMessage() {}
-	    }, {
 	        key: 'componentWillMount',
 	        value: function componentWillMount() {
+	            var token = window.sessionStorage.getItem('token');
+	            if (token) {
+	                fetch("/token", {
+	                    method: 'POST',
+	                    headers: {
+	                        'Accept': 'application/json',
+	                        'Content-Type': 'application/json'
+	                    },
+	                    body: JSON.stringify({
+	                        token: token
+	                    })
+	                }).then(function (res) {
+	                    return res.json();
+	                }).then(function (data) {
+	                    if (data.ok) {
+	                        Store.dispatch(Action.setLogin(true));
+	                        Store.dispatch(Action.setUser(data.user));
+	                    }
+	                });
+	            }
+	
+	            fetch("/message", {
+	                method: 'GET'
+	            }).then(function (res) {
+	                return res.json();
+	            }).then(function (data) {
+	                data.map(function (d) {
+	                    Store.dispatch(Action.groupMessage(d.group, d.content, d.user, d.time));
+	                });
+	            }).catch(function (e) {
+	                return console.log('error', e);
+	            });
+	
 	            var socket = (0, _socket2.default)();
 	            socket.on('new', function (data) {
 	                console.log(data);
-	                Store.dispatch(Action.groupMessage(data.group, data.message));
+	                Store.dispatch(Action.groupMessage(data.group, data.data.message, data.data.user, data.data.time));
 	            });
-	
-	            // socket.on('new personal message', data =>{
-	            //     this.props.dispatch(Action.personalMessage(data.id, data));
-	            // })
 	        }
 	    }, {
 	        key: 'componentDidMount',
@@ -209,11 +310,13 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var message = this.props.message;
-	            //message = message || [];
+	            var _props = this.props;
+	            var message = _props.message;
+	            var user = _props.user;
+	            var isLogin = _props.isLogin;
 	
-	            var isLogin = false;
-	            var user = "A";
+	            message = message || _default2.default.messages;
+	            user = user || _default2.default.user;
 	            var props = {
 	                index: {
 	                    user: user,
@@ -221,7 +324,8 @@
 	                    handleSendMessage: this.handleSendMessage.bind(this)
 	                },
 	                register: {
-	                    handleRegister: this.handleRegister.bind(this)
+	                    handleRegister: this.handleRegister.bind(this),
+	                    handleRegInfoCheck: this.handleRegInfoCheck.bind(this)
 	                },
 	                login: {
 	                    handleLogin: this.handleLogin.bind(this)
@@ -250,18 +354,13 @@
 	exports.default = App;
 	
 	
-	function mapselect(state) {
+	function mapStateToProps(state) {
 	    return {
 	        message: state.message,
-	        user: state.user
+	        user: state.user,
+	        isLogin: state.isLogin
 	    };
 	}
-	
-	// const mapDispatch = dispatch => {
-	//     return {
-	//         bindActionCreators(Action, dispatch);
-	//     }
-	// }
 	
 	function mapDispatch(dispatch) {
 	    return (0, _redux.bindActionCreators)(Action, dispatch);
@@ -270,7 +369,7 @@
 	//     return  {};
 	// }
 	
-	var ConnectedApp = (0, _reactRedux.connect)(mapselect, mapDispatch)(App);
+	var ConnectedApp = (0, _reactRedux.connect)(mapStateToProps, mapDispatch)(App);
 	
 	_reactDom2.default.render(_react2.default.createElement(
 	    _reactRedux.Provider,
@@ -34941,9 +35040,9 @@
 
 /***/ },
 /* 289 */
-/*!*****************************************!*\
-  !*** ./public/js/components/header.jsx ***!
-  \*****************************************/
+/*!**********************************!*\
+  !*** ./js/components/header.jsx ***!
+  \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34982,8 +35081,10 @@
 	        value: function render() {
 	            var _props = this.props;
 	            var handleLogout = _props.handleLogout;
+	            var user = _props.user;
 	            var isLogin = _props.isLogin;
 	
+	            console.log('isLogin', isLogin);
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -34992,7 +35093,7 @@
 	                    { className: 'navbar' },
 	                    _react2.default.createElement(
 	                        _reactRouter.IndexLink,
-	                        { to: '/' },
+	                        { to: '/index' },
 	                        'Home'
 	                    ),
 	                    _react2.default.createElement(
@@ -35030,9 +35131,9 @@
 
 /***/ },
 /* 290 */
-/*!*****************************************!*\
-  !*** ./public/js/components/footer.jsx ***!
-  \*****************************************/
+/*!**********************************!*\
+  !*** ./js/components/footer.jsx ***!
+  \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35086,9 +35187,9 @@
 
 /***/ },
 /* 291 */
-/*!***********************************!*\
-  !*** ./public/js/pages/login.jsx ***!
-  \***********************************/
+/*!****************************!*\
+  !*** ./js/pages/login.jsx ***!
+  \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35123,13 +35224,33 @@
 	    _createClass(Login, [{
 	        key: 'infoCheck',
 	        value: function infoCheck(username, password) {
-	            this.setState({
-	                username: undefined,
-	                password: undefined
-	            });
-	
 	            if (username === "" || password === "") {
-	                return false;
+	                return { type: "error", content: "用户名或密码不能为空" };
+	            }
+	        }
+	    }, {
+	        key: 'showErrMsg',
+	        value: function showErrMsg(type, content) {
+	            if (type === 'success') {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { style: { color: 'green' } },
+	                    _react2.default.createElement(
+	                        'span',
+	                        null,
+	                        content
+	                    )
+	                );
+	            } else if (type === 'error') {
+	                return _react2.default.createElement(
+	                    'div',
+	                    { style: { color: 'red' } },
+	                    _react2.default.createElement(
+	                        'span',
+	                        null,
+	                        content
+	                    )
+	                );
 	            }
 	        }
 	    }, {
@@ -35138,8 +35259,8 @@
 	            var _this2 = this;
 	
 	            var handleLogin = this.props.handleLogin;
+	            // console.log(handleLogin);
 	
-	            console.log(handleLogin);
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -35170,9 +35291,9 @@
 
 /***/ },
 /* 292 */
-/*!***********************************!*\
-  !*** ./public/js/pages/about.jsx ***!
-  \***********************************/
+/*!****************************!*\
+  !*** ./js/pages/about.jsx ***!
+  \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35232,9 +35353,9 @@
 
 /***/ },
 /* 293 */
-/*!***********************************!*\
-  !*** ./public/js/pages/index.jsx ***!
-  \***********************************/
+/*!****************************!*\
+  !*** ./js/pages/index.jsx ***!
+  \****************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35289,17 +35410,31 @@
 	    _createClass(Index, [{
 	        key: 'render',
 	        value: function render() {
-	            console.log(this);
+	            //  console.log(this);
 	            var _props = this.props;
 	            var handleSendMessage = _props.handleSendMessage;
 	            var message = _props.message;
+	            var user = _props.user;
 	
-	            console.log('index message ', message);
+	            //  console.log(user);
+	            // <div className = "show_user">  {user} </div>
+	            //console.log('handleSendMessage ', handleSendMessage);
+	
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'inputArea' },
+	                _react2.default.createElement(
+	                    'div',
+	                    { className: 'user' },
+	                    _react2.default.createElement('img', { src: user.avatar, style: { width: 50, height: 50 } }),
+	                    _react2.default.createElement(
+	                        'span',
+	                        null,
+	                        user.username
+	                    )
+	                ),
 	                _react2.default.createElement(_messageBox2.default, { message: message }),
-	                _react2.default.createElement(_inputBox2.default, { handleSendMessage: handleSendMessage })
+	                _react2.default.createElement(_inputBox2.default, { handleSendMessage: handleSendMessage, user: user })
 	            );
 	        }
 	    }]);
@@ -35311,9 +35446,9 @@
 
 /***/ },
 /* 294 */
-/*!*****************************************!*\
-  !*** ./public/js/components/avatar.jsx ***!
-  \*****************************************/
+/*!**********************************!*\
+  !*** ./js/components/avatar.jsx ***!
+  \**********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -35371,9 +35506,9 @@
 
 /***/ },
 /* 295 */
-/*!*******************************************!*\
-  !*** ./public/js/components/inputBox.jsx ***!
-  \*******************************************/
+/*!************************************!*\
+  !*** ./js/components/inputBox.jsx ***!
+  \************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35415,8 +35550,8 @@
 	        }*/
 	
 	        value: function componentDidMount() {
-	            var socket = (0, _socket2.default)();
-	            socket.emit('ison', "ison");
+	            /*let socket = io();
+	            socket.emit('ison',"ison");*/
 	        }
 	    }]);
 	
@@ -35427,12 +35562,30 @@
 	    }
 	
 	    _createClass(InputBox, [{
+	        key: 'getMessage',
+	        value: function getMessage() {
+	            var input = this.refs.inputMessage;
+	            var message = input.value;
+	            var Mto = 'all';
+	            var D = new Date();
+	            var time = D.getMonth() + 1 + '-' + D.getDate() + '  ' + D.getHours() + ':' + D.getMinutes() + ':' + D.getSeconds();
+	            input.value = "";
+	            return {
+	                Mto: Mto,
+	                message: message,
+	                time: time
+	            };
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var _this2 = this;
 	
-	            var handleSendMessage = this.props.handleSendMessage;
-	            //  console.log(handleSendMessage);
+	            var _props = this.props;
+	            var handleSendMessage = _props.handleSendMessage;
+	            var user = _props.user;
+	            //  console.log('user', user);
+	            // console.log('handleSendMessage', handleSendMessage);
 	
 	            var messageInputStyle = {
 	                height: 100,
@@ -35449,18 +35602,22 @@
 	                    type: 'text',
 	                    className: 'input-message',
 	                    ref: 'inputMessage',
-	                    maxLength: 512
+	                    maxLength: 512,
+	
+	                    onKeyDown: function onKeyDown(e) {
+	                        if (e.keyCode === 13 && !e.shiftKey) {
+	                            var msg = _this2.getMessage.bind(_this2)();
+	                            e.preventDefault();
+	                            handleSendMessage(msg.message, msg.Mto, user, msg.time);
+	                        }
+	                    }
 	
 	                }),
 	                _react2.default.createElement(
 	                    'button',
 	                    { onClick: function onClick(e) {
-	                            var inputMessage = _this2.refs.inputMessage.value;
-	                            var Mto = 'all';
-	                            /*   if (sendMessageCheck(inputMessage)) {
-	                                   return;
-	                               }*/
-	                            handleSendMessage(inputMessage, Mto);
+	                            var msg = _this2.getMessage.bind(_this2)();
+	                            handleSendMessage(msg.message, msg.Mto, user, msg.time);
 	                        }
 	                    },
 	                    '发送'
@@ -35476,9 +35633,9 @@
 
 /***/ },
 /* 296 */
-/*!*********************************************!*\
-  !*** ./public/js/components/messageBox.jsx ***!
-  \*********************************************/
+/*!**************************************!*\
+  !*** ./js/components/messageBox.jsx ***!
+  \**************************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35486,8 +35643,6 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
@@ -35538,21 +35693,8 @@
 	        value: function render() {
 	            var message = this.props.message;
 	
-	            console.log("msg", message);
-	            console.log('type', _typeof({ message: message }));
-	            // console.log(this);
-	            /*    {
-	             message.map((onemessage, index) => {
-	              return <Message
-	             key = {index}
-	             // avatar = { message.avatar }
-	             // time = { message.time }
-	             content = { onemessage }
-	             //username = { message.username }
-	             />
-	             })
-	              }*/
-	
+	            message = message || [];
+	            //   console.log('messagebox message',message);
 	            return _react2.default.createElement(
 	                'div',
 	                { style: {
@@ -35560,7 +35702,9 @@
 	                        overflow: 'auto'
 	                    },
 	                    ref: 'msgbox' },
-	                _react2.default.createElement(_message2.default, { content: message })
+	                message.map(function (msg, index) {
+	                    return _react2.default.createElement(_message2.default, { key: index, message: msg });
+	                })
 	            );
 	        }
 	    }]);
@@ -35568,13 +35712,20 @@
 	    return messageBox;
 	}(_react.Component);
 
+	/*
+	messageBox.propTypes = {
+	    message : PropTypes.array.isRequired
+	};
+	*/
+
+
 	exports.default = messageBox;
 
 /***/ },
 /* 297 */
-/*!******************************************!*\
-  !*** ./public/js/components/message.jsx ***!
-  \******************************************/
+/*!***********************************!*\
+  !*** ./js/components/message.jsx ***!
+  \***********************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35620,13 +35771,15 @@
 	             time: '00:00:00'
 	         };*/
 	
+	        /*
+	        *   <div className= "User-avatar">
+	         <Avatar src = { content.avatar } />
+	         </div>
+	         <span>{ content.name } { time }</span>
+	        * */
 	        value: function render() {
-	            var _props = this.props;
-	            var avatar = _props.avatar;
-	            var name = _props.name;
-	            var content = _props.content;
-	            var time = _props.time;
-	
+	            var message = this.props.message;
+	            // console.log('message', message);
 	
 	            var oneStyle = {
 	                display: 'flex',
@@ -35638,20 +35791,22 @@
 	                { className: 'One', style: oneStyle },
 	                _react2.default.createElement(
 	                    'div',
-	                    { className: 'User-avatar' },
-	                    _react2.default.createElement(_avatar2.default, { src: avatar })
-	                ),
-	                _react2.default.createElement(
-	                    'span',
 	                    null,
-	                    name,
-	                    ' ',
-	                    time
-	                ),
-	                _react2.default.createElement(
-	                    'div',
-	                    null,
-	                    content
+	                    _react2.default.createElement('img', { src: message.user.avatar, style: { width: 40, height: 40 } }),
+	                    message.user.username,
+	                    _react2.default.createElement(
+	                        'span',
+	                        null,
+	                        ' ',
+	                        message.time,
+	                        ' '
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        null,
+	                        ' ',
+	                        message.message
+	                    )
 	                )
 	            );
 	        }
@@ -35674,9 +35829,9 @@
 
 /***/ },
 /* 298 */
-/*!****************************!*\
-  !*** ./public/js/store.js ***!
-  \****************************/
+/*!*********************!*\
+  !*** ./js/store.js ***!
+  \*********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -35696,19 +35851,24 @@
 
 /***/ },
 /* 299 */
-/*!******************************!*\
-  !*** ./public/js/reducer.js ***!
-  \******************************/
+/*!***********************!*\
+  !*** ./js/reducer.js ***!
+  \***********************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	//import { combineReduces } from 'redux';
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
+	//'use strict';
+	
+	//import { combineReducers } from 'redux';
 	var Action = __webpack_require__(/*! ./action.js */ 300);
 	
+	//let initState = {}
+	
 	function reducer() {
-	    var state = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+	    var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	    var action = arguments[1];
 	
 	    switch (action.type) {
@@ -35716,47 +35876,45 @@
 	            {
 	                return Object.assign({}, state, { user: action.user });
 	            }
-	        // case Action.types.SetUserInfo: {
-	        //     state.user.name = action.user.name;
-	        //     state.user.avatar = action.user.avatar;
-	        //     return Object.assign({}, state);
-	        // }
-	        // case Action.types.SetLogin: {
-	        //     state.isLogin = action.status;
-	        //     return Object.assign({}, state);
-	        // }
+	        case Action.types.SetUserInfo:
+	            {
+	                state.user.username = action.user.username;
+	                state.user.avatar = action.user.avatar;
+	                return Object.assign({}, state);
+	            }
+	        case Action.types.SetLogin:
+	            {
+	                //state.isLogin = action.status;
+	                return Object.assign({}, state, { isLogin: action.status });
+	            }
 	        case Action.types.GroupMessage:
 	            {
+	                if (state.message == null) {
+	                    return Object.assign({}, state, {
+	                        message: [{
+	                            group: action.group,
+	                            message: action.message,
+	                            user: action.user,
+	                            time: action.time
+	                        }]
+	                    });
+	                }
 	
-	                /*   return Object.assign({}, state,{
-	                       message: action.message
-	                   });
-	                */
-	                /*return Object.assign({},state,{
-	                    message: [ ...state,
-	                         {group: action.group,
-	                            message: action.message}
-	                     ]
-	                });*/
-	
-	                /*return [
-	                    ...state,{
-	                    message: [
-	                        ...state,{
-	                        group: action.group,
-	                        message: action.message
-	                    }]}
-	                ]*/
 	                return Object.assign({}, state, {
-	                    message: [{
+	                    message: [].concat(_toConsumableArray(state.message), [{
 	                        group: action.group,
-	                        message: action.message
-	                    }]
+	                        message: action.message,
+	                        user: action.user,
+	                        time: action.time
+	                    }])
 	                });
-	
-	                /* {
-	                     message: [{},{},];
-	                 }*/
+	                /*return [
+	                    ...state,
+	                    {
+	                        message: action.message,
+	                        group: action.group
+	                    }
+	                ]*/
 	            }
 	        default:
 	            {
@@ -35765,15 +35923,30 @@
 	    }
 	}
 	
-	//let reducers = combineReduces({ reducer });
+	/*
+	function messageReducer (state = state.message, action) {
+	    switch (action.type) {
+	        case Action.types.GroupMessage : {
+	            return [...state, action.message];
+	        }
+	        default :
+	            return state;
+	    }
+	}
+	
+	let reducers = combineReducers({
+	    a: reducer ,
+	    message: messageReducer
+	});
+	*/
 	
 	module.exports = reducer;
 
 /***/ },
 /* 300 */
-/*!*****************************!*\
-  !*** ./public/js/action.js ***!
-  \*****************************/
+/*!**********************!*\
+  !*** ./js/action.js ***!
+  \**********************/
 /***/ function(module, exports) {
 
 	'use strict';
@@ -35801,16 +35974,18 @@
 	
 	    setUserInfo: function setUserInfo(user) {
 	        return {
-	            type: this.type.SetUserInfo,
+	            type: this.types.SetUserInfo,
 	            user: user
 	        };
 	    },
 	
-	    groupMessage: function groupMessage(group, message) {
+	    groupMessage: function groupMessage(group, message, user, time) {
 	        return {
 	            type: this.types.GroupMessage,
 	            group: group,
-	            message: message
+	            message: message,
+	            user: user,
+	            time: time
 	        };
 	    },
 	
@@ -35824,17 +35999,17 @@
 	
 	    setLogin: function setLogin(status) {
 	        return {
-	            type: this.type.SetLogin,
-	            status: status
+	            type: this.types.SetLogin,
+	            isLogin: status
 	        };
 	    }
 	};
 
 /***/ },
 /* 301 */
-/*!**************************************!*\
-  !*** ./public/js/pages/register.jsx ***!
-  \**************************************/
+/*!*******************************!*\
+  !*** ./js/pages/register.jsx ***!
+  \*******************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35868,13 +36043,30 @@
 	    }
 	
 	    _createClass(Register, [{
+	        key: 'checkRegInfo',
+	        value: function checkRegInfo(username, password) {
+	            if (username === "") {
+	                console.log('dsa');
+	                this.errMsg("error", "请输入用户名");
+	                return false;
+	            } else if (password === "") {
+	                this.errMsg("error", "密码错误");
+	                return false;
+	            }
+	            return true;
+	        }
+	        //   handleRegister(username, password);
+	
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var _this2 = this;
 	
-	            var handleRegister = this.props.handleRegister;
+	            var _props = this.props;
+	            var handleRegister = _props.handleRegister;
+	            var handleRegInfoCheck = _props.handleRegInfoCheck;
+	            //  console.log(handleRegister);
 	
-	            console.log(handleRegister);
 	            return _react2.default.createElement(
 	                'div',
 	                null,
@@ -35889,12 +36081,30 @@
 	                    { onClick: function onClick(e) {
 	                            var username = _this2.refs.username.value;
 	                            var password = _this2.refs.password.value;
+	                            {
+	                                if (!_this2.checkRegInfo.bind(_this2)(username, password)) {
+	                                    return;
+	                                }
+	                            }
 	                            handleRegister(username, password);
 	                        }
 	                    },
 	                    ' 注册 '
 	                )
 	            );
+	        }
+	    }], [{
+	        key: 'errMsg',
+	        value: function errMsg(type, content) {
+	
+	            if (type === "error") {
+	                console.log('dsaasd');
+	                return _react2.default.createElement(
+	                    'div',
+	                    { className: 'errmsg', style: { color: 'red' } },
+	                    content
+	                );
+	            }
 	        }
 	    }]);
 	
@@ -35905,9 +36115,9 @@
 
 /***/ },
 /* 302 */
-/*!**********************************!*\
-  !*** ./public/js/pages/test.jsx ***!
-  \**********************************/
+/*!***************************!*\
+  !*** ./js/pages/test.jsx ***!
+  \***************************/
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35989,6 +36199,28 @@
 	}(_react.Component);
 
 	exports.default = Test;
+
+/***/ },
+/* 303 */
+/*!***********************!*\
+  !*** ./js/default.js ***!
+  \***********************/
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	/**
+	 * Created by m on 16-4-21.
+	 */
+	
+	module.exports = {
+	    user: {
+	        username: "tourist",
+	        avatar: "https://tse1-mm.cn.bing.net/th?id=OIP.M4b8881c6a7f535a4fd9e131e131ef550o0&w=113&h=110&c=7&rs=1&qlt=90&pid=3.1&rm=2"
+	    },
+	    messages: [],
+	    isLogin: false
+	};
 
 /***/ }
 /******/ ]);

@@ -1,16 +1,14 @@
 'use strict';
 
-import React, { Component, ProTypes } from 'react';
+import React, { Component, PropTypes } from 'react';
 import Message from './message.jsx';
 import Store from '../store.js';
 
 export default class messageBox extends Component{
-    
+
     componentDidUpdate(){
         
     }
-    
-   
     
     componentDidMount() {
         setTimeout(() => {
@@ -18,36 +16,32 @@ export default class messageBox extends Component{
             msgbox.scrollTop = msgbox.scrollHeight || 0;
         }, 100);
     }
-    
    
     render() {
         let { message } = this.props;
-        console.log("msg", message);
-        console.log('type', typeof {message});
-       // console.log(this);
-        /*    {
-         message.map((onemessage, index) => {
-
-         return <Message
-         key = {index}
-         // avatar = { message.avatar }
-         // time = { message.time }
-         content = { onemessage }
-         //username = { message.username }
-         />
-         })
-
-         }*/
-        
+        message = message || [];
+     //   console.log('messagebox message',message);
         return(
-            <div style={{
+            <div style = {{
                 flex: '1 1 0',
                 overflow: 'auto'
             }}
             ref ="msgbox">
-            <Message content = {message} />
+                {
+                    message.map(function(msg, index) {
+                        return <Message  key = {index} message = {msg}/>
+                    })
+                }
             </div>
-        )
+        );
     }
     
 }
+
+/*
+messageBox.propTypes = {
+    message : PropTypes.array.isRequired
+};
+*/
+
+
