@@ -25,7 +25,8 @@ import Test from './pages/test.jsx';
 //default
 import DefaultInfo from './default.js';
 
-// registe login sendMessage
+//css
+//import '../css/r-chat.css';
 
 export default class App extends Component {
 

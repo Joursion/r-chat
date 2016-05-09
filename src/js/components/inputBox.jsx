@@ -40,22 +40,32 @@ export default class InputBox extends Component {
         let { handleSendMessage, user } = this.props;
       //  console.log('user', user);
        // console.log('handleSendMessage', handleSendMessage);
-        let messageInputStyle = {
-            height:100,
-            width: 200,
-            background: '#fff000'
+        let style = {
+            main:{
+                display: "flex",
+                height: 40,
+                flexDirection: "row",
+                marginTop: 10
+            },
+            inputBox: {
+                flex:8
+            },
+            btn:{
+                flex:1
+            }
+
         };
 
         return (
             <div className="messageInput"
-                 style = { messageInputStyle }
+                 style = { style.main }
                 >
                 <input
                     type = 'text'
                     className = 'input-message'
                     ref = 'inputMessage'
                     maxLength = {512}
-
+                    style = { style.inputBox }
                     onKeyDown={ e => {
                         if (e.keyCode === 13 && !e.shiftKey) {
                             let msg = this.getMessage.bind(this)();
@@ -65,7 +75,9 @@ export default class InputBox extends Component {
                     } }
 
                     />
-                <button onClick = { e => {
+                <button
+                    style = { style.btn }
+                    onClick = { e => {
                     let msg = this.getMessage.bind(this)();
                     handleSendMessage(msg.message, msg.Mto, user, msg.time);
                 }}

@@ -12,5 +12,3 @@ exports.getMessage = function () {
     return Message.find().sort('time').limit(30).exec();
 };
 
-
-

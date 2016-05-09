@@ -27,13 +27,15 @@
     "koa-static": "*",
     "mongoose": "^4.4.12",
     "node-uuid": "^1.4.7",
-    "react": "^0.14.7",
-    "react-dom": "^0.14.7",
-    "react-redux": "^4.4.0",
+    "react": "15.0.2",
+    "react-dom": "15.0.2",
+    "react-redux": "4.4.5",
     "react-router": "^2.0.0",
     "redux": "^3.3.1",
     "socket.io": "*",
-    "webpack": "^1.12.14"
+    "socket.io-client":"1.4.6",
+    "webpack": "^1.12.14",
+    "material-ui":"0.15.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
