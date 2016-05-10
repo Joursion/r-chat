@@ -10,7 +10,7 @@ export default class messageBox extends Component{
         let msgBox = this.refs.msgBox;
         let maxHeight = msgBox.scrollHeight - msgBox.clientHeight;
         let lastElement = msgBox.lastElementChild;
-        console.log('height',maxHeight, lastElement.offsetHeight);
+       // console.log('height',maxHeight, lastElement.offsetHeight);
         if (lastElement && msgBox.scrollTop >= maxHeight - lastElement.offsetHeight - 10) {
             msgBox.scrollTop = msgBox.scrollHeight;
         }

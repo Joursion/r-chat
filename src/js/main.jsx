@@ -150,7 +150,7 @@ export default class App extends Component {
             }).then(res => res.json())
                 .then(data => {
                     if (data.ok) {
-                        Store.dispatch(Action.setLogin(true));
+                        Store.dispatch(Action.setLogin("true"));
                         Store.dispatch(Action.setUser(data.user));
                     }
                 });
@@ -183,10 +183,12 @@ export default class App extends Component {
         let { message, user , isLogin} = this.props;
         message = message || DefaultInfo.messages;
         user = user || DefaultInfo.user;
+        isLogin = isLogin || DefaultInfo.isLogin;
         const props = {
             index: {
                 user,
                 message,
+                isLogin,
                 handleSendMessage: this.handleSendMessage.bind(this)
             },
             register: {

@@ -16,8 +16,9 @@ function reducer (state = {}, action) {
             return Object.assign({}, state);
         }
         case Action.types.SetLogin: {
-            //state.isLogin = action.status;
-            return Object.assign({}, state, {isLogin: action.status});
+          //  state.isLogin = action.status;
+            return Object.assign({}, state, {isLogin: action.status}); 
+            //return Object.assign({}, state, {isLogin: action.status});
         }
         case Action.types.GroupMessage:
         {

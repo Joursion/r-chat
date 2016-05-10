@@ -47,7 +47,7 @@ module.exports = {
     setLogin: function (status) {
         return {
             type: this.types.SetLogin,
-            isLogin: status
+            status: status
         }
     }
 };

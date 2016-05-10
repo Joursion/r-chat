@@ -48,7 +48,8 @@ export default class InputBox extends Component {
                 marginTop: 10
             },
             inputBox: {
-                flex:8
+                flex:8,
+                padding: "5px 3px"
             },
             btn:{
                 flex:1
@@ -76,6 +77,7 @@ export default class InputBox extends Component {
 
                     />
                 <button
+                    className="btn"
                     style = { style.btn }
                     onClick = { e => {
                     let msg = this.getMessage.bind(this)();

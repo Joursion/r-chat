@@ -4,6 +4,7 @@ import { Router, Route, IndexRoute, browserHistory, hashHistory } from 'react-ro
 import Avatar from '../components/avatar.jsx';
 import InputBox from '../components/inputBox.jsx';
 import MessageBox from '../components/messageBox.jsx';
+import User from '../components/user.jsx';
 //import Login from './pages/login.jsx';
 
 /*material components*/
@@ -30,7 +31,7 @@ export default class Index extends Component {
         let style = {
             container: {
                 display: "flex",
-                minHeight: "100vh",
+                minHeight: "85vh",
                 flexDirection: "row",
                 margin: "auto",
                 minWidth:900,
@@ -62,13 +63,7 @@ export default class Index extends Component {
         return (
             <container style = {style.container}>
                 <div className = "side_bar" style = { style.side_bar }>
-                    <div className="user">
-                        <img src={user.avatar} style = {{width:50,height:50}}/>
-                        <span>{ user.username }</span>
-                    </div>
-                    <div>
-                        { }
-                    </div>
+                    <User username={user.username} avatar={user.avatar}/>
                 </div>
                 <div style = { style.content }>
                     <MessageBox style = {style.msgBox} message = { message }/>
